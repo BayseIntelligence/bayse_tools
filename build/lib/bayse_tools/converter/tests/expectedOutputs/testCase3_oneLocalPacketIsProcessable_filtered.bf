@@ -1,0 +1,1 @@
+{"hash": "8c79b29db2d040519c6477999a81071b", "trafficDate": "1617652276.543011", "fileName": "testCase3_oneLocalPacketIsProcessable_filtered.bf", "BayseFlows": [{"src": "0.0.0.0:68", "dst": "255.255.255.255:67", "destinationNameSource": "original", "srcPkts": 1, "srcBytes": 244, "dstPkts": 0, "dstBytes": 0, "relativeStart": 0.0, "protocolInformation": "UDP", "duration": 0.0}]}
