@@ -1,5 +1,5 @@
 """
-    Copyright (c) 2022 David Pearson (david@bayse.io)
+    Copyright (c) 2022 Bayse, Inc. (maintainer: david@bayse.io)
     Date: 09/01/2022
     Code originally created by me as below.
 
