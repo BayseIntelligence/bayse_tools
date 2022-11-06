@@ -3,9 +3,10 @@
     Date: 09/01/2022
     Code originally created by me as below.
 
-    Copyright (c) 2021 David Pearson (david@seclarity.io)
-    Date: 12/20/2021
     This file contains all of the main pieces needed to successfully stream and label BayseFlows from a local system.
+
+    Copyright 2021-2022 SeclarityIO, LLC
+    Code created by David Pearson (david@seclarity.io)
 
     For license information, please see the accompanying LICENSE file in the top-level directory of this repository.
 """

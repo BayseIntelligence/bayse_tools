@@ -3,12 +3,12 @@
     Date: 09/01/2022
     Code originally created by me as below.
 
-    Copyright 2021-2022 SeclarityIO, LLC
-    Code created by David Pearson (david@seclarity.io)
-
     This file contains the DNS class, which keeps the state of all DNS data for the creation of
     well-named BayseFlows. This class has helper functions to control passive naming from the incoming
     file we're analyzing and from recently seen sessions.
+
+    Copyright 2021-2022 SeclarityIO, LLC
+    Code created by David Pearson (david@seclarity.io)
 
     For license information, please see the accompanying LICENSE file in the top-level directory of this repository.
 """

@@ -142,6 +142,7 @@ def convert_pcap(pcapfile_location, output_dir=None, should_label=False, api_key
        update this now.
     """
     utils.set_bayseflow_durations()
+    utils.set_stream_ids_for_pcap()
     finish_conversion(dnshelper, utils, should_label, api_key, env_var, labeling_path)
 
 

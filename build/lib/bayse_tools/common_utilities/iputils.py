@@ -3,10 +3,10 @@
     Date: 09/01/2022
     Code originally created by me as below.
 
+    This file contains utility functions that work with IP addresses.
+
     Copyright 2021-2022 SeclarityIO, LLC
     Code created by David Pearson (david@seclarity.io)
-
-    This file contains utility functions that work with IP addresses.
 
     For license information, please see the accompanying LICENSE file in the top-level directory of this repository.
 

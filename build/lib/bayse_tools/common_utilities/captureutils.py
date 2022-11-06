@@ -3,9 +3,10 @@
     Date: 09/01/2022
     Code originally created by me as below.
 
-    Copyright (c) 2021 David Pearson (david@seclarity.io)
-    Date: 06/02/2021
     This file contains functions that support capturing exactly what we need and nothing more.
+
+    Copyright 2021-2022 SeclarityIO, LLC
+    Code created by David Pearson (david@seclarity.io)
 
     For license information, please see the accompanying LICENSE file in the top-level directory of this repository.
 
@@ -174,6 +175,7 @@ def process_packets(**kwargs):
             continue
     if utils.stop_thread:
         utils.set_bayseflow_durations()
+        utils.set_stream_ids_for_pcap()
         dnshelper.get_passive_dns()
         """At this point, we want to see what existing passive DNS information was learned in recent sessions and use
            that first. TO do so, we need to lock the resource associated with the short-term pDNS file so that we don't

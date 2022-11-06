@@ -16,7 +16,7 @@ import sys
 
 
 class BayseFlow:
-    def __init__(self, s_ip, s_port, d_ip, d_port, timing_info, file_start_time, protocol_information):
+    def __init__(self, s_ip, s_port, d_ip, d_port, timing_info, file_start_time, protocol_information, identifier=""):
         if protocol_information in ["ICMP"]:
             self.key = f"{s_ip}:{protocol_information}-{d_ip}:{protocol_information}"
         else:
@@ -36,6 +36,7 @@ class BayseFlow:
         self.relative_start_time = 0  # how long after the file started did this session begin, rounded to 6 decimals
         self.duration = -1  # we can't know this until the end of session
         self.protocol_information = protocol_information # essentially should be empty unless it's ICMP right now
+        self.identifier = identifier  # field to indicate how to tie this flow back to its (possible) source data
         self.calculate_timing_information(timing_info
                                         , file_start_time)  # we do this just once at the beginning, since these values are based on the start times
 
@@ -61,3 +62,4 @@ class BayseFlow:
         """Uses stored information to figure out how long this BayseFlow lasted.
         """
         self.duration = float("%.6f" % (self.max_ts - self.min_ts))
+

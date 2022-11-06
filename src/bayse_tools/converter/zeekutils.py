@@ -101,6 +101,7 @@ def convert_zeek_to_bayseflow(utils):
                                                 , float(zeekflow.timestamp)
                                                 , float(utils.file_start_time)
                                                 , zeekflow.protocol_information
+                                                , zeekflow.unique_id
                                                 )  # create a new BayseFlow object
                 utils.bayseflows[zeekflow.bayseflow_key] = bayseflow_object  # store it
             if zeekflow.bayseflow_key not in utils.bayseflows.keys():  # we've not collected this sourceIP:source_port
@@ -111,6 +112,7 @@ def convert_zeek_to_bayseflow(utils):
                                                 , float(zeekflow.timestamp)
                                                 , float(utils.file_start_time)
                                                 , zeekflow.protocol_information
+                                                , zeekflow.unique_id
                                                 )  # create a new BayseFlow object
                 utils.bayseflows[zeekflow.bayseflow_key] = bayseflow_object  # store it
 

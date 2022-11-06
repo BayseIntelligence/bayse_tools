@@ -1,12 +1,12 @@
 Metadata-Version: 2.1
 Name: bayse-tools
-Version: 0.9
+Version: 1.0.1
 Summary: A collection of tools useful across the Bayse ecosystem.
-Home-page: https://github.com/xx
+Home-page: https://github.com/BayseIntelligence/bayse_tools
 Author: Bayse, Inc.
 Author-email: david@bayse.io
 License: UNKNOWN
-Project-URL: Bug Tracker, https://github.com/xx
+Project-URL: Bug Tracker, https://github.com/BayseIntelligence/bayse_tools/issues
 Platform: UNKNOWN
 Classifier: Programming Language :: Python :: 3
 Classifier: License :: OSI Approved :: MIT License

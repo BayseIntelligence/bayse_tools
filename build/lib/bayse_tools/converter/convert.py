@@ -3,11 +3,11 @@
     Date: 09/01/2022
     Code originally created by me as below.
 
-    Copyright (c) 2021 David Pearson (david@seclarity.io)
-    Date: 06/02/2021
-
     The functions in this file handle PCAP, PCPANG, Zeek, and Interflow files. They convert all traffic into BayseFlow
     format (which is similar to but more lightweight than Zeek flows).
+
+    Copyright 2021-2022 SeclarityIO, LLC
+    Code created by David Pearson (david@seclarity.io)
 
     For license information, please see the accompanying LICENSE file in the top-level directory of this repository.
 """
@@ -142,6 +142,7 @@ def convert_pcap(pcapfile_location, output_dir=None, should_label=False, api_key
        update this now.
     """
     utils.set_bayseflow_durations()
+    utils.set_stream_ids_for_pcap()
     finish_conversion(dnshelper, utils, should_label, api_key, env_var, labeling_path)
 
 

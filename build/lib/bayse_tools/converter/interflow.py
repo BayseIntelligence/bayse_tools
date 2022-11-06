@@ -3,8 +3,6 @@
     Date: 09/01/2022
     Code originally created by me as below.
 
-    Copyright 2021-2022 SeclarityIO, LLC
-    Code created by David Pearson (david@seclarity.io)
     This file contains the Interflow class, which captures the fields that are found in Stellar Cyber's Interflow format
     for network traffic. Note that there are MANY fields in Interflow that will not be a part of this converter, as they
     are not necessary to convert to BayseFlow. The file is expected to contain one Interflow per line in JSON format,
@@ -21,6 +19,9 @@
     Note that if we are missing some of the outbytes, outpkts, inbytes, or inpkts fields, we will attempt to compensate
     whenever possible. Any Interflow records that have nonsensical (i.e. totalpackets = 0) or no packet and byte data
     will be ignored.
+
+    Copyright 2021-2022 SeclarityIO, LLC
+    Code created by David Pearson (david@seclarity.io)
 
     For license information, please see the accompanying LICENSE file in the top-level directory of this repository.
 """

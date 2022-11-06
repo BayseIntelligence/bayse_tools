@@ -3,9 +3,10 @@
     Date: 09/01/2022
     Code originally created by me as below.
 
-    Copyright (c) 2022 David Pearson (david@seclarity.io)
-    Date: 02/03/2022
     This file contains tests for the converter code.
+
+    Copyright 2021-2022 SeclarityIO, LLC
+    Code created by David Pearson (david@seclarity.io)
 
     For license information, please see the accompanying LICENSE file in the top-level directory of this repository.
 """

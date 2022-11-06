@@ -3,10 +3,11 @@
     Date: 09/01/2022
     Code originally created by me as below.
 
-    Copyright (c) 2021 David Pearson (david@seclarity.io)
-    Date: 06/02/2021
     This file contains utilities that make processing a .cap, .pcap, or .pcapng file easy to do. Ultimately, the final
     function in this file will create BayseFlows out of the incoming capture data.
+
+    Copyright 2021-2022 SeclarityIO, LLC
+    Code created by David Pearson (david@seclarity.io)
 
     For license information, please see the accompanying LICENSE file in the top-level directory of this repository.
 

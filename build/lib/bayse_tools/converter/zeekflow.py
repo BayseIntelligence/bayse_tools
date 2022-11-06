@@ -3,8 +3,6 @@
     Date: 09/01/2022
     Code originally created by me as below.
 
-    Copyright 2021-2022 SeclarityIO, LLC
-    Code created by David Pearson (david@seclarity.io)
     This file contains the ZeekFlow class, which captures the fields that are found in a Zeek flow from the conn.log
     file. Formatting should always look like the following ("field #" lines are my annotation) _UNLESS_ it is a JSON
     Zeek file:
@@ -30,6 +28,9 @@
                 1186    0     S0      -       -       0       D       23
         Field #  18     19      20      21
                 1830    0       0       -
+
+    Copyright 2021-2022 SeclarityIO, LLC
+    Code created by David Pearson (david@seclarity.io)
 
     For license information, please see the accompanying LICENSE file in the top-level directory of this repository.
 """
@@ -83,7 +84,7 @@ class ZeekFlow():
                 self.bayseflow_key = f"{flowdata[2]}:{flowdata[3]}-{flowdata[4]}:{flowdata[5]}"  # useful for later
                 # conversion, but also use it here.
                 self.timestamp = float(flowdata[0])
-                self.unique_id = flowdata[1]
+                self.unique_id = f'{flowdata[1]}'
                 self.source_ip = flowdata[2]
                 self.source_port = flowdata[3]
                 self.dest_ip = flowdata[4]

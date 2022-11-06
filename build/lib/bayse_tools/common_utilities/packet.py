@@ -3,11 +3,11 @@
     Date: 09/01/2022
     Code originally created by me as below.
 
-    Copyright 2021-2022 SeclarityIO, LLC
-    Code created by David Pearson (david@seclarity.io)
-
     This file contains the PacketInfo class, which allows us to take a network packet as input and calculate all
     relevant information needed to make correct decisions on IP, TCP, and UDP data.
+
+    Copyright 2021-2022 SeclarityIO, LLC
+    Code created by David Pearson (david@seclarity.io)
 
     For license information, please see the accompanying LICENSE file in the top-level directory of this repository.
 """

@@ -3,10 +3,10 @@
     Date: 09/01/2022
     Code originally created by me as below.
 
+    This file contains utility functions and variables that are used by a number of callers.
+
     Copyright 2021-2022 SeclarityIO, LLC
     Code created by David Pearson (david@seclarity.io)
-
-    This file contains utility functions and variables that are used by a number of callers.
 
     For license information, please see the accompanying LICENSE file in the top-level directory of this repository.
 """
@@ -20,6 +20,8 @@ from pathlib import Path
 
 
 class Utilities:
+    NEXT_TCP_STREAM_VALUE = 0  # useful for tying BayseFlows from PCAPs back to tcp.stream value
+    NEXT_UDP_STREAM_VALUE = 0  # useful for tying BayseFlows from PCAPs back to udp.stream value
     local_ips_forward_regex = r"^(10|127|169\.254|172\.1[6-9]|172\.2[0-9]|172\.3[0-1]|192\.168)\."
     local_ips_reverse_regex = r"([0-9]{1,3})\.([0-9]{1,3})\.((1[6-9]\.172)|(2[0-9]\.172)|(3[0-1]\.172)|([0-9]{1,3}\.10)|(168\.192))\.in\-addr\.arpa\.$"
     ipv6_regex = r"(([1-9a-fA-F]{1,}:)"  # very basic, meant to filter out virtually anything right now. Also not currently used
@@ -88,6 +90,23 @@ class Utilities:
         for bayseflow in self.bayseflows:
             self.bayseflows[bayseflow].set_bayseflow_duration()
 
+    def set_stream_ids_for_pcap(self):
+        """PCAP-like formats have a nice helper functionality (in Wireshark, tcpdump, etc...) that tell you which
+           TCP or UDP stream (0 is the first) a packet belongs to, which allows people to easily filter on particular
+           streams. Since this functionality isn't actually part of a packet but is rather a higher-level construct,
+           we need to recreate it by identifying which TCP or UDP stream a BayseFlow corresponds to.
+        """
+        for bayseflow in self.bayseflows:
+            if self.bayseflows[bayseflow].protocol_information.upper() == "TCP" and self.bayseflows[
+                bayseflow].identifier == "":
+                self.bayseflows[bayseflow].identifier = f"{self.NEXT_TCP_STREAM_VALUE}"
+                self.NEXT_TCP_STREAM_VALUE += 1
+            elif self.bayseflows[bayseflow].protocol_information.upper() == "UDP" and self.bayseflows[
+                bayseflow].identifier == "":
+                self.bayseflows[bayseflow].identifier = f"{self.NEXT_UDP_STREAM_VALUE}"
+                self.NEXT_UDP_STREAM_VALUE += 1
+
+
     def save_bayseflows_to_file(self):
         """Saves BayseFlows to a .bf file for hashing.
         """
@@ -109,6 +128,7 @@ class Utilities:
                                  f"\t{self.bayseflows[bayseflow].dest_payload_bytes}"
                                  f"\t{self.bayseflows[bayseflow].relative_start_time}"
                                  f"\t{self.bayseflows[bayseflow].protocol_information}"
+                                 f"\t{self.bayseflows[bayseflow].identifier}"
                                  f"\t{self.bayseflows[bayseflow].duration}"
                                  f"\n"
                                 )
@@ -122,6 +142,7 @@ class Utilities:
                                  f"\t{self.bayseflows[bayseflow].dest_payload_bytes}"
                                  f"\t{self.bayseflows[bayseflow].relative_start_time}"
                                  f"\t{self.bayseflows[bayseflow].protocol_information}"
+                                 f"\t{self.bayseflows[bayseflow].identifier}"
                                  f"\t{self.bayseflows[bayseflow].duration}"
                                  f"\n"
                                 )
@@ -177,6 +198,7 @@ class Utilities:
                                  "dstBytes": self.bayseflows[flow].dest_payload_bytes,
                                  "relativeStart": self.bayseflows[flow].relative_start_time,
                                  "protocolInformation": self.bayseflows[flow].protocol_information,
+                                 "identifier": self.bayseflows[flow].identifier,
                                  "duration": self.bayseflows[flow].duration
                                 }
                             ]
@@ -191,6 +213,7 @@ class Utilities:
                                  "dstBytes": self.bayseflows[flow].dest_payload_bytes,
                                  "relativeStart": self.bayseflows[flow].relative_start_time,
                                  "protocolInformation": self.bayseflows[flow].protocol_information,
+                                 "identifier": self.bayseflows[flow].identifier,
                                  "duration": self.bayseflows[flow].duration
                                 }
                             ]

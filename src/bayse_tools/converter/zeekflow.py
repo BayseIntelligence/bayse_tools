@@ -84,7 +84,7 @@ class ZeekFlow():
                 self.bayseflow_key = f"{flowdata[2]}:{flowdata[3]}-{flowdata[4]}:{flowdata[5]}"  # useful for later
                 # conversion, but also use it here.
                 self.timestamp = float(flowdata[0])
-                self.unique_id = flowdata[1]
+                self.unique_id = f'{flowdata[1]}'
                 self.source_ip = flowdata[2]
                 self.source_port = flowdata[3]
                 self.dest_ip = flowdata[4]

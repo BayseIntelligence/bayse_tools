@@ -3,10 +3,11 @@
     Date: 09/01/2022
     Code originally created by me as below.
 
-    Copyright (c) 2021 David Pearson (david@seclarity.io)
-    Date: 06/02/2021
     This file contains utilities that allow a Zeek conn (and an optional dns) log to be converted into equivalent
     BayseFlows.
+
+    Copyright 2021-2022 SeclarityIO, LLC
+    Code created by David Pearson (david@seclarity.io)
 
     For license information, please see the accompanying LICENSE file in the top-level directory of this repository.
 """
@@ -100,6 +101,7 @@ def convert_zeek_to_bayseflow(utils):
                                                 , float(zeekflow.timestamp)
                                                 , float(utils.file_start_time)
                                                 , zeekflow.protocol_information
+                                                , zeekflow.unique_id
                                                 )  # create a new BayseFlow object
                 utils.bayseflows[zeekflow.bayseflow_key] = bayseflow_object  # store it
             if zeekflow.bayseflow_key not in utils.bayseflows.keys():  # we've not collected this sourceIP:source_port
@@ -110,6 +112,7 @@ def convert_zeek_to_bayseflow(utils):
                                                 , float(zeekflow.timestamp)
                                                 , float(utils.file_start_time)
                                                 , zeekflow.protocol_information
+                                                , zeekflow.unique_id
                                                 )  # create a new BayseFlow object
                 utils.bayseflows[zeekflow.bayseflow_key] = bayseflow_object  # store it
 

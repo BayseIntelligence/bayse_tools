@@ -175,6 +175,7 @@ def process_packets(**kwargs):
             continue
     if utils.stop_thread:
         utils.set_bayseflow_durations()
+        utils.set_stream_ids_for_pcap()
         dnshelper.get_passive_dns()
         """At this point, we want to see what existing passive DNS information was learned in recent sessions and use
            that first. TO do so, we need to lock the resource associated with the short-term pDNS file so that we don't
