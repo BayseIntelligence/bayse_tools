@@ -5,9 +5,7 @@ Summary: A collection of tools useful across the Bayse ecosystem.
 Home-page: https://github.com/BayseIntelligence/bayse_tools
 Author: Bayse, Inc.
 Author-email: david@bayse.io
-License: UNKNOWN
 Project-URL: Bug Tracker, https://github.com/BayseIntelligence/bayse_tools/issues
-Platform: UNKNOWN
 Classifier: Programming Language :: Python :: 3
 Classifier: License :: OSI Approved :: MIT License
 Classifier: Operating System :: MacOS :: MacOS X
@@ -15,6 +13,3 @@ Classifier: Operating System :: POSIX :: Linux
 Requires-Python: >=3.9
 Description-Content-Type: text/markdown
 License-File: LICENSE
-
-UNKNOWN
-

@@ -79,6 +79,7 @@ src/bayse_tools/converter/tests/inputs/testCase25_icmpTunneling.pcap
 src/bayse_tools/converter/tests/inputs/testCase26_icmpTunneling.conn.log
 src/bayse_tools/converter/tests/inputs/testCase26_icmpTunneling.dns.log
 src/bayse_tools/converter/tests/inputs/testCase27_internetScanning.pcap
+src/bayse_tools/converter/tests/inputs/testCase27_internetScanning_filtered.bf
 src/bayse_tools/converter/tests/inputs/testCase28_testForNegativeBytecountsSource.pcap
 src/bayse_tools/converter/tests/inputs/testCase29_testForNegativeBytecountsDestination.pcap
 src/bayse_tools/converter/tests/inputs/testCase2_chromeWin10VisitAmazonScamaDotCom.pcapng
