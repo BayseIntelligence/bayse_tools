@@ -45,6 +45,7 @@ Bayse currently supports conversion into BayseFlow format from the following for
  | Packet Capture | `CAP`, `PCAP`, and `PCAPNG`                        |
  | Zeek  | `conn.log` and `dns.log` in `TSV` or `JSON` format |
  | Interflow | comma-separated list of `JSON` records             |
+
 `?` If you have a format that you'd like us to support, please contact support at bayse [.] io.
 
 #### Usage
@@ -156,7 +157,7 @@ Ubuntu systems). Every time the specified duration you provided is reached (if y
 print a small amount of information about the number of BayseFlows and its UUID.
 
 ## BayseFlow Format
-The BayseFlow format is saved as a `.bf` file and is compromised of records containing that look like the following:
+The BayseFlow format is saved as a `.bf` file and is comprised of records containing that look like the following:
 
 ```
 {
