@@ -96,6 +96,10 @@ class Utilities:
            streams. Since this functionality isn't actually part of a packet but is rather a higher-level construct,
            we need to recreate it by identifying which TCP or UDP stream a BayseFlow corresponds to.
         """
+        # first, make sure we're in ascending relativeStart order
+        self.bayseflows = {k: v for k, v in sorted(self.bayseflows.items(),
+                                                   key=lambda item: item[1].relative_start_time)}
+
         for bayseflow in self.bayseflows:
             if self.bayseflows[bayseflow].protocol_information.upper() == "TCP" and self.bayseflows[
                 bayseflow].identifier == "":

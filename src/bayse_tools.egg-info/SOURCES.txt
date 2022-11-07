@@ -46,6 +46,8 @@ src/bayse_tools/converter/tests/expectedOutputs/testCase29_testForNegativeByteco
 src/bayse_tools/converter/tests/expectedOutputs/testCase2_chromeWin10VisitAmazonScamaDotCom_filtered.bf
 src/bayse_tools/converter/tests/expectedOutputs/testCase30_dnsNotButchered_filtered.bf
 src/bayse_tools/converter/tests/expectedOutputs/testCase31_dnsNotWronglyAttributed_filtered.bf
+src/bayse_tools/converter/tests/expectedOutputs/testCase32_gre_encapsulation_filtered.bf
+src/bayse_tools/converter/tests/expectedOutputs/testCase33_ipip_encapsulation_filtered.bf
 src/bayse_tools/converter/tests/expectedOutputs/testCase3_oneLocalPacketIsProcessable_filtered.bf
 src/bayse_tools/converter/tests/expectedOutputs/testCase4_oneNonLocalPacketIsProcessable_filtered.bf
 src/bayse_tools/converter/tests/expectedOutputs/testCase5_oneFlowPlusLocalDNSIsProcessable_filtered.bf
@@ -79,12 +81,13 @@ src/bayse_tools/converter/tests/inputs/testCase25_icmpTunneling.pcap
 src/bayse_tools/converter/tests/inputs/testCase26_icmpTunneling.conn.log
 src/bayse_tools/converter/tests/inputs/testCase26_icmpTunneling.dns.log
 src/bayse_tools/converter/tests/inputs/testCase27_internetScanning.pcap
-src/bayse_tools/converter/tests/inputs/testCase27_internetScanning_filtered.bf
 src/bayse_tools/converter/tests/inputs/testCase28_testForNegativeBytecountsSource.pcap
 src/bayse_tools/converter/tests/inputs/testCase29_testForNegativeBytecountsDestination.pcap
 src/bayse_tools/converter/tests/inputs/testCase2_chromeWin10VisitAmazonScamaDotCom.pcapng
 src/bayse_tools/converter/tests/inputs/testCase30_dnsNotButchered.pcapng
 src/bayse_tools/converter/tests/inputs/testCase31_dnsNotWronglyAttributed.pcap
+src/bayse_tools/converter/tests/inputs/testCase32_gre_encapsulation.cap
+src/bayse_tools/converter/tests/inputs/testCase33_ipip_encapsulation.cap
 src/bayse_tools/converter/tests/inputs/testCase3_oneLocalPacketIsProcessable.pcapng
 src/bayse_tools/converter/tests/inputs/testCase4_oneNonLocalPacketIsProcessable.pcapng
 src/bayse_tools/converter/tests/inputs/testCase5_oneFlowPlusLocalDNSIsProcessable.pcapng

@@ -19,9 +19,11 @@ from bayse_tools.common_utilities import utilities
 
 
 class PacketInfo:
+    SUPPORTED_TUNNELING_PROTOCOLS = [4, 47]  # IPIP, GRE
     def __init__(self, pkt, packet_header, utils):
         """Store/Calculate relevant fields
         """
+        #print("Packet:", pkt)
         try:
             self.packet_start_time = float(str(packet_header.getts()[0]) + "." + str(packet_header.getts()[1]).zfill(
                 6))  # unix seconds.microseconds format
@@ -81,6 +83,12 @@ class PacketInfo:
                 # collect any data (ICMPv4) or other options and/or data (ICMPv6)
                 remaining_length = len(pkt) - self.ip_layer_header_length - self.ip_layer_start - icmp_header_length
                 self.upper_layer_length = remaining_length
+            elif self.transport_protocol in self.SUPPORTED_TUNNELING_PROTOCOLS:
+                """For all tunneling, we will de-encapsulate and ignore the tunnel endpoints. This may be changed in 
+                   the future based on customer requests.
+                """
+                pkt = self.decapsulate_tunneled_data(pkt, self.transport_protocol)
+                self.__init__(pkt, packet_header, utils)
             else:  # something is wrong
                 self.transport_layer_length = -1
                 self.upper_layer_length = -1
@@ -90,6 +98,21 @@ class PacketInfo:
                 self.utils = utils
         except:
             return None
+
+    def decapsulate_tunneled_data(self, pkt, tunneling_protocol):
+        """When we have data tunneled at layer 3 (IP or IPv6), we want to essentially replace the outer layer 3 header
+           with the content of the internal layer 3 header. Depending on what options exist for the various
+           protocols, we may also want to replace layer 2.
+        """
+        GRE_TRANSPARENT_BRIDGING = b"\x65\x58"
+        if tunneling_protocol == 47:  # GRE has a 4 byte header
+            if pkt[self.transport_layer_start+2:self.transport_layer_start+4] == GRE_TRANSPARENT_BRIDGING:
+                pkt = pkt[self.transport_layer_start+4:]  # throw away Ethernet header too
+            else:
+                pkt = pkt[0:self.ip_layer_start]+pkt[self.transport_layer_start+4:]
+        elif tunneling_protocol == 4:  # IPIP, which we just throw away the first IP header
+            pkt = pkt[0:self.ip_layer_start]+pkt[self.transport_layer_start:]
+        return pkt
 
     def determine_session_directionality(self, hdr):
         """Determines which side of a given not-yet-identified session is the source vs. the destination based on the

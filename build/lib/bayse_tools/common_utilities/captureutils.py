@@ -43,7 +43,7 @@ def create_bpf():
           MUST be IP and no SMB or any other E-W protocols and no non-DNS local-to-local traffic and no IPv6 (since we
           do not handle IPv6 today).
     """
-    bpf_to_apply = "tcp or udp or icmp or icmp6"
+    bpf_to_apply = "tcp or udp or icmp or icmp6 or ip or ip6"
     #bpf_to_apply = "ip and not ip6" # filter out IPv6 (for now) only
     #bpf_to_apply="ip and ((not port (" + local_protocols + ")) and not (" + local_to_local_sans_dns + ") and not ip6)"
     return bpf_to_apply

@@ -14,6 +14,7 @@
 """
 
 import json
+import pcapy
 import re
 import pickle
 import ipaddress
@@ -295,10 +296,6 @@ class DNS:
            The parsing that occurs in this function is correlated with the DNS header, and (I believe) should
            handle both UDP and TCP DNS queries.
         """
-        try:
-            import pcapy
-        except ImportError:
-            print("Couldn't import pcapy")
         with pcapy.open_offline(self.utils.original_filepath) as capfile:
             capfile.setfilter("port domain")
             try:

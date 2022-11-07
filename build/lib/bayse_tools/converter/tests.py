@@ -157,6 +157,14 @@ def run_tests():
                     {"inputType": "pcap"
                         , "filename": "testCase31_dnsNotWronglyAttributed.pcap"
                      }
+                    ,
+                    {"inputType": "pcap"
+                        , "filename": "testCase32_gre_encapsulation.cap"
+                     }
+                    ,
+                    {"inputType": "pcap"
+                        , "filename": "testCase33_ipip_encapsulation.cap"
+                     }
                 ]
     test_dir = None
     with importlib.resources.files(__package__).joinpath("tests") as p:

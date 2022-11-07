@@ -60,3 +60,4 @@ def collect_active_external_ips_from_capture_file(utils):
                 except:
                     print("IP addresses not found in expected byte range for this packet. Skipping.")
             hdr, pkt = capfile.next()
+

@@ -118,7 +118,7 @@ def pcap_to_bayseflow_converter(utils, dnshelper):
     # get all of the DNS queries in form <port> <dns.qry.name> <dns.resp.name>
     dnshelper.parse_dns_records_from_capture_file()
 
-    bpf_to_apply = "tcp or udp or icmp or icmp6"
+    bpf_to_apply = "tcp or udp or icmp or icmp6 or ip or ip6"
 
     """Filter the capture file using the assembled BPF, and then return the filtered file location for use in the rest
        of the pipeline.
@@ -136,12 +136,15 @@ def pcap_to_bayseflow_converter(utils, dnshelper):
     # get all of the ICMP/ICMPv6 records in place
     parse_bayseflows_from_capture_file(utils, "icmp or icmp6")
 
+    # get all of the IP/IPv6 non-TCP or UDP records (like GRE, IPIP) in place
+    parse_bayseflows_from_capture_file(utils, "not udp and not tcp and (ip or ip6)")
+
 
 def get_min_timestamp_from_capture_file(utils):
     """Iterates through the file to find the absolute minimum timestamp.
     """
     with pcapy.open_offline(utils.filtered_filepath) as capfile:
-        capfile.setfilter("udp or tcp or icmp or icmp6")
+        capfile.setfilter("udp or tcp or icmp or icmp6 or ip or ip6")
         try:
             (hdr, pkt) = capfile.next()
         except:
@@ -163,7 +166,7 @@ def parse_bayseflows_from_capture_file(utils, protocol):
        of BayseFlows.
     """
     with pcapy.open_offline(utils.filtered_filepath) as capfile:
-        if not re.match("^(tcp|udp|(icmp or icmp6))$", protocol):
+        if not re.match("^(tcp|udp|(icmp or icmp6)|(not udp and not tcp and \\(ip or ip6\\)))$", protocol):
             print(f"Error, protocol {protocol} not supported!")
             return
         capfile.setfilter(protocol)
