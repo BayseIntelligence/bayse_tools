@@ -18,6 +18,8 @@ import subprocess
 import sys
 import platform
 import pathlib
+import time
+
 from bayse_tools.converter import pcaputils
 from bayse_tools.converter import generic_flowutils
 from bayse_tools.converter import zeekutils
@@ -26,7 +28,8 @@ from bayse_tools.common_utilities import utilities
 from bayse_tools.common_utilities import dnsutils
 
 
-def finish_conversion(dnshelper, utils, should_label=False, api_key=None, env_var=None, labeling_path=None):
+def finish_conversion(dnshelper, utils, should_label=False, api_key=None, env_var=None, labeling_path=None,
+                      converter_start=None):
     """Handle final conversion of inputs that don't depend on input-specific information. Default to believing that the
        initial pieces of the pipeline were successful unless we are told otherwise by incoming knowledge. Doing so
        allows us to create a valid file with no data when there are either no flows or something has failed. If the
@@ -66,7 +69,16 @@ def finish_conversion(dnshelper, utils, should_label=False, api_key=None, env_va
         start_path = pathlib.Path(utils.bayseflow_output_filepath)
         filename = start_path.stem + start_path.suffix
         utils.bayseflow_output_filepath = str(start_path.rename(pathlib.PurePath(utils.output_dir, filename)))
+    if converter_start:
+        converter_end = time.perf_counter()
+        total_time = converter_end - converter_start
+        total_flows = len(utils.bayseflows) if len(utils.bayseflows) > 0 else 1
+        print(f"Conversion completed in {total_time:0.1f}s at rate of {total_flows/total_time} BayseFlows/s")
     if should_label:
+        if converter_start:
+            labeling_start = time.perf_counter()
+        else:
+            labeling_start = None
         print("Adding labeling information to BayseFlow file.")
         api_key = api_key if api_key else os.environ.get(env_var)
         # construct the path to the labeling executable
@@ -79,11 +91,16 @@ def finish_conversion(dnshelper, utils, should_label=False, api_key=None, env_va
         if result.stderr:
             print(result.stderr)
             print("Labeling unsuccessful")
+        if labeling_start:
+            labeling_end = time.perf_counter()
+            total_time = labeling_end - labeling_start
+            print(f"Labeling completed in {labeling_end - labeling_start:0.1f}s at rate of {total_flows/total_time} "
+                  f"BayseFlows/s")
     print("Conversion complete! Final BayseFlow Output stored at", utils.bayseflow_output_filepath)
 
 
 def convert_zeek(zeekfile_location, zeek_dnsfile_location=None, output_dir=None, should_label=False, api_key=None,
-                 env_var=None, labeling_path=None):
+                 env_var=None, labeling_path=None, converter_start=None):
     """Handles all of the Zeek-specific conversion needs. Takes an optional DNS log.
     """
     my_platform = platform.system().lower()
@@ -102,11 +119,11 @@ def convert_zeek(zeekfile_location, zeek_dnsfile_location=None, output_dir=None,
 
     # most of the heavy lifting happens here
     zeekutils.zeek_2_bayseflows(utils)
-    finish_conversion(dnshelper, utils, should_label, api_key, env_var, labeling_path)
+    finish_conversion(dnshelper, utils, should_label, api_key, env_var, labeling_path, converter_start)
 
 
 def convert_interflow(interflow_location, output_dir=None, should_label=False, api_key=None, env_var=None,
-                      labeling_path=None):
+                      labeling_path=None, converter_start=None):
     """Handles all of the Interflow-specific conversion needs.
     """
     my_platform = platform.system().lower()
@@ -121,11 +138,11 @@ def convert_interflow(interflow_location, output_dir=None, should_label=False, a
 
     # most of the heavy lifting happens here
     interflowutils.interflow_2_bayseflows(utils, dnshelper)
-    finish_conversion(dnshelper, utils, should_label, api_key, env_var, labeling_path)
+    finish_conversion(dnshelper, utils, should_label, api_key, env_var, labeling_path, converter_start)
 
 
 def convert_pcap(pcapfile_location, output_dir=None, should_label=False, api_key=None, env_var=None,
-                 labeling_path=None):
+                 labeling_path=None, converter_start=None):
     """Handles all of the PCAP-specific conversion needs. Supports PCAPNG as well.
     """
     my_platform = platform.system().lower()
@@ -143,7 +160,7 @@ def convert_pcap(pcapfile_location, output_dir=None, should_label=False, api_key
     """
     utils.set_bayseflow_durations()
     utils.set_stream_ids_for_pcap()
-    finish_conversion(dnshelper, utils, should_label, api_key, env_var, labeling_path)
+    finish_conversion(dnshelper, utils, should_label, api_key, env_var, labeling_path, converter_start)
 
 
 if __name__ == "__main__":
@@ -171,6 +188,9 @@ if __name__ == "__main__":
     labeling_group.add_argument("-e", "--environmentVariable",
                               help="name of the environment variable where your API key is stored",
                               type=str)
+    stats_group = parser.add_argument_group("stats", "arguments to use for collecting statistics about the conversion.")
+    stats_group.add_argument("-t", "--timing", help="capture diagnostics about timing of each step",
+                             action="store_true")
     args = parser.parse_args()
 
     pcapfile_location = None
@@ -228,17 +248,22 @@ if __name__ == "__main__":
     """
         Input type-specific file processing in this section
     """
+    if args.timing:
+        converter_start = time.perf_counter()
+    else:
+        converter_start = None
     if args.zeekConnLog:
         convert_zeek(zeekfile_location,
                      zeek_dnsfile_location,
                      should_label=label,
                      api_key=api_key,
                      env_var=environment_variable,
-                     labeling_path=labeling_binary_path
+                     labeling_path=labeling_binary_path,
+                     converter_start=converter_start
                      )
     elif args.pcap:
         convert_pcap(pcapfile_location, should_label=label, api_key=api_key, env_var=environment_variable,
-                     labeling_path=labeling_binary_path)
+                     labeling_path=labeling_binary_path, converter_start=converter_start)
     elif args.interflowLog:
         convert_interflow(interflow_location, should_label=label, api_key=api_key, env_var=environment_variable,
-                          labeling_path=labeling_binary_path)
+                          labeling_path=labeling_binary_path, converter_start=converter_start)
