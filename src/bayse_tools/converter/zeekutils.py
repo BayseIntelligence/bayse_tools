@@ -52,7 +52,7 @@ def store_zeekflows(utils):
                     utils.genericflows[zeekflow_object.bayseflow_key] = []
                 utils.genericflows[zeekflow_object.bayseflow_key] += [zeekflow_object]
         else:
-            # capture CSV format
+            # capture TSV format
             for line in infile:
                 if line.startswith("#"):  # it's a comment line
                     continue

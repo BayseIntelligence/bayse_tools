@@ -24,8 +24,11 @@ from bayse_tools.converter import pcaputils
 from bayse_tools.converter import generic_flowutils
 from bayse_tools.converter import zeekutils
 from bayse_tools.converter import interflowutils
+from bayse_tools.converter import netflowutils
 from bayse_tools.common_utilities import utilities
 from bayse_tools.common_utilities import dnsutils
+
+SUPPORTED_FORMATS = ["Zeek", "PCAP", "Interflow", "Netflow v9"]
 
 
 def finish_conversion(dnshelper, utils, should_label=False, api_key=None, env_var=None, labeling_path=None,
@@ -141,6 +144,25 @@ def convert_interflow(interflow_location, output_dir=None, should_label=False, a
     finish_conversion(dnshelper, utils, should_label, api_key, env_var, labeling_path, converter_start)
 
 
+def convert_netflow(interflow_location, output_dir=None, should_label=False, api_key=None, env_var=None,
+                      labeling_path=None, converter_start=None):
+    """Handles all of the Netflow-specific conversion needs.
+    """
+    my_platform = platform.system().lower()
+    utils = utilities.Utilities(str(interflow_location), my_platform, output_dir=output_dir, sample_type="Netflow")
+    dnshelper = dnsutils.DNS(utils)  # create an instance of the DNS class to use
+
+    # there's no filtered file in Netflow, so just grab name from original file.
+    utils.filtered_filepath = utils.original_filepath
+
+    # make sure the file is a valid Netflow log
+    generic_flowutils.validate_file_format(utils)
+
+    # most of the heavy lifting happens here
+    netflowutils.netflow_2_bayseflows(utils, dnshelper)
+    finish_conversion(dnshelper, utils, should_label, api_key, env_var, labeling_path, converter_start)
+
+
 def convert_pcap(pcapfile_location, output_dir=None, should_label=False, api_key=None, env_var=None,
                  labeling_path=None, converter_start=None):
     """Handles all of the PCAP-specific conversion needs. Supports PCAPNG as well.
@@ -179,6 +201,9 @@ if __name__ == "__main__":
     interflow_group = parser.add_argument_group("interflow", "arguments available when analyzing Interflow files")
     interflow_group.add_argument("--interflowLog", help="a valid Interflow JSON log file", type=str)
 
+    netflow_group = parser.add_argument_group("netflow", "arguments available when analyzing Netflow v9 files")
+    netflow_group.add_argument("--netflowLog", help="a valid Netflow v9 log file", type=str)
+
     labeling_group = parser.add_argument_group("labeling", "arguments for handling labeling")
     labeling_group.add_argument("-l", "--label",
                               help="add labels to the BayseFlow file",
@@ -202,7 +227,7 @@ if __name__ == "__main__":
         """
         Check if multiple input types were inputted 
         """
-        print("Error: can only parse Zeek OR PCAP OR Interflow, not many at same time.")
+        print(f"Error: can only parse {SUPPORTED_FORMATS}, not many at same time.")
         sys.exit(1)
     elif args.zeekConnLog:
         zeekfile_location = pathlib.Path(args.zeekConnLog)
@@ -224,8 +249,10 @@ if __name__ == "__main__":
             sys.exit(1)
     elif args.interflowLog:
         interflow_location = pathlib.Path(args.interflowLog)
+    elif args.netflowLog:
+        netflow_location = pathlib.Path(args.netflowLog)
     else:
-        print("Missing -p, -z, or --interflowLog argument.")
+        print("Missing -p, -z, --interflowLog, or --netflowLog argument.")
         sys.exit(1)
 
     # if we want to label the output, capture relevant args
@@ -266,4 +293,7 @@ if __name__ == "__main__":
                      labeling_path=labeling_binary_path, converter_start=converter_start)
     elif args.interflowLog:
         convert_interflow(interflow_location, should_label=label, api_key=api_key, env_var=environment_variable,
+                          labeling_path=labeling_binary_path, converter_start=converter_start)
+    elif args.netflowLog:
+        convert_netflow(netflow_location, should_label=label, api_key=api_key, env_var=environment_variable,
                           labeling_path=labeling_binary_path, converter_start=converter_start)

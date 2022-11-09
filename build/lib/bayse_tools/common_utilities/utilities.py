@@ -52,8 +52,9 @@ class Utilities:
         """
         self.genericflows = collections.OrderedDict()
         self.file_format = None  # track format of data passed in
-        self.packet_buffer = collections.deque() #create an empty buffer to store packets that have not yet been processed
-        self.stop_thread = False #keep state of whether thread should be stopped
+        self.packet_buffer = collections.deque()  # create an empty buffer to store packets that have not yet been
+        # processed
+        self.stop_thread = False  # keep state of whether thread should be stopped
         self.labeling_binary_name = "labeling"  # stores the name of the labeling binary in case labeling is desired
 
     def cleanup_files(self):

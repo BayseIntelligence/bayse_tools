@@ -19,6 +19,10 @@ src/bayse_tools/converter/convert.py
 src/bayse_tools/converter/generic_flowutils.py
 src/bayse_tools/converter/interflow.py
 src/bayse_tools/converter/interflowutils.py
+src/bayse_tools/converter/ipfix.py
+src/bayse_tools/converter/ipfixutils.py
+src/bayse_tools/converter/netflow_v9.py
+src/bayse_tools/converter/netflowutils.py
 src/bayse_tools/converter/pcaputils.py
 src/bayse_tools/converter/tests.py
 src/bayse_tools/converter/zeekflow.py

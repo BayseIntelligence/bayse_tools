@@ -38,7 +38,8 @@ class DNS:
     def __init__(self, utils):
         self.questions = dict()
         self.passive_dns_names_dict = dict()
-        self.short_term_pdns_dict = dict() # saves passive DNS that was learned recently, but not necessarily during this streaming session
+        self.short_term_pdns_dict = dict()  # saves passive DNS that was learned recently, but not necessarily during
+        # this streaming session
         self.active_dns_names = dict()
         self.unique_passive_dns_names = dict()  # results that only have one name for an IP in this file
         self.short_term_passive_dns_lock_name = "./shortTermPassiveDNS.pkl.lock"

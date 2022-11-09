@@ -57,6 +57,9 @@ def validate_file_format(utils):
         if not re.match(r"^JSON (text |)data|New Line Delimited JSON text data$"
                         , utils.file_format):
             valid = False
+    elif utils.sample_type == "Netflow":
+        if not re.match(r"^(ASCII text)$", utils.file_format):
+            valid = False
     else:
         valid = False
     if not valid:
