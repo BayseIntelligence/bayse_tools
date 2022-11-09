@@ -16,14 +16,27 @@ from bayse_tools.converter import generic_flowutils
 from bayse_tools.converter import netflow_v9 as netflow
 
 HEADER_MAPS = {
-    "absolute_start_time": ["date first seen", "date flow start"],
-    "duration": ["duration"],
-    "protocolInformation": ["proto"],
+    "absolute_start_time": ["date first seen", "date flow start", "ts"],
+    "endtime": ["te"],
+    "duration": ["duration", "td"],
+    "protocolInformation": ["proto", "pr"],
     "sourcedata": ["src ip addr:port"],
+    "src": ["sa"],
+    "sourcepackets": ["packets", "ipkt"],
+    "source_bytes_flows": ['bytes flows'],
+    "srcport": ["sp"],
+    "srcbytes": ["ibyt"],
     "destinationdata": ["dst ip addr:port"],
-    "sourcepackets": ["packets"],
-    "source_bytes_flows": ['bytes flows']
-}  # what we should call fields and what they can possibly be in the various formats of Netflow
+    "dst": ["da"],
+    "dstbytes": ["obyt"],
+    "dstport": ["dp"],
+    "destinationpackets": ["opkt"],
+    "direction": ["dir"]
+
+}
+"""^ What we should call fields and what they can possibly be in the various formats of Netflow. Short names from
+ Appendix B of https://www.giac.org/paper/gcia/9290/netflow-collection-analysis-nfcapd-python-splunk/129719
+"""
 
 
 def store_netflows(utils):
@@ -35,6 +48,10 @@ def store_netflows(utils):
     is_json = True if utils.file_format is not None and "JSON" in utils.file_format else False
     with open(utils.original_filepath) as infile:
         if is_json:
+            print(f"{utils.file_format} not currently supported.")
+            return None
+            # TODO: The JSON format from nfdump is garbage because it spits out a prettified JSON record,
+            #  not actually valid JSON...
             flows = []
             for line in infile:
                 data = json.loads(line)
@@ -46,7 +63,59 @@ def store_netflows(utils):
                 else:
                     print(f"Unrecognized JSON data {type(data)}")
                     return None
+            for flowdata in flows:
+                important_fields = dict()
+                # an individual line, which actually doesn't generally capture all of the data for a 4-tuple.
+                for field in flowdata:
+                    for key in HEADER_MAPS:
+                        if field.lower() in HEADER_MAPS[key]:
+                            print(f"Found {field} in {HEADER_MAPS[key]}")
+                            important_fields[key] = field
+                print(f"Important fields: {important_fields}")
+                netflow_object = netflow.Netflow(flowdata, is_json)
+                if netflow_object.bayseflow_key is None:
+                    print("Failed to capture key for Netflow object; skipping record. Please see errors before this!")
+                    continue
+                if netflow_object.bayseflow_key not in utils.genericflows.keys():
+                    utils.genericflows[netflow_object.bayseflow_key] = []
+                utils.genericflows[netflow_object.bayseflow_key] += [netflow_object]
+        elif "CSV" in utils.file_format:
+            important_fields = dict()  # we'll only collect the positioning of things we care about and ignore the rest
+            important_flowdata = dict()  # where to store the data from the fields we care about
+            for num, line in enumerate(infile):
+                if len(line) == 0:
+                    continue
+                if re.match(r"^[a-zA-Z]", line[0]):  # we're expecting lines with data to start with some kind of tstamp
+                    if num == 0:  # first line, probably has header info
+                        print("Header data (raw):", line)
+                        headerinfo = list(filter(None, re.split(",", line.lower().strip())))
+                        print(f"Tokenized header data: {headerinfo}")
+                        for i, name in enumerate(headerinfo):
+                            for key in HEADER_MAPS:
+                                if name.strip() in HEADER_MAPS[key]:
+                                    important_fields[key] = i
+                        # TODO! Make the field collection function (so we can handle varied formats) separate!
+                        print("After analyzing header, we have the following important fields in these positions:", important_fields)
+                    continue  # skip other comment/header lines and ignore processing this line for data
+                flowdata = list(filter(None, re.split(",", line.lower().strip())))
+                # an individual line, which actually may not capture all of the data for a 4-tuple.
+                print(f"Tokenized flow data: {flowdata}")
+                for num, field in enumerate(flowdata):
+                    if num in important_fields.values():
+                        field = field.strip()  # get rid of extraneous whitespace
+                        field_name = list(important_fields.keys())[list(important_fields.values()).index(num)]
+                        important_flowdata[field_name] = field
+                print(f"After collecting what matters, here's what we have:", important_flowdata.items())
+                # TODO: Start here, as this is actually a feasible path forward for meeting the upcoming timeline
+                if num > 5:
+                    return None  # temporary
+            return None  # temporary
         else:
+            print("TODO.")
+            """
+            #TODO: Fix all of this, dependent on what format(s) we should expect.
+            print(f"{utils.file_format} not currently supported.")
+            return None
             # capture TSV format
             important_fields = dict()  # we'll only collect the positioning of things we care about and ignore the rest
             important_flowdata = dict()  # where to store the data from the fields we care about
@@ -77,12 +146,12 @@ def store_netflows(utils):
                 print(f"After collecting what matters, here's what we have:", important_flowdata.items())
                 # TODO: Start here and keep mucking with stuff. Below is rough output of this right now, which shows
                 #  issues:
-                """
+
                 Tokenized header data: ['date first seen', ' duration', ' proto', 'src ip addr:port', 'dst ip addr:port', ' packets', 'bytes flows']
                 After analyzing header, we have the following important fields in these positions: {'absolute_start_time': 0, 'duration': 1, 'protocolInformation': 2, 'sourcedata': 3, 'destinationdata': 4, 'sourcepackets': 5, 'source_bytes_flows': 6}
                 Tokenized flow data: ['2022-02-15 21:23:52.441', ' 00:00:00.000 udp', ' 10.2.9.133:59889 ->', ' 10.2.9.9:53', ' 1', ' 51', ' 1']
                 After collecting what matters, here's what we have: dict_items([('absolute_start_time', '2022-02-15 21:23:52.441'), ('duration', '00:00:00.000 udp'), ('protocolInformation', '10.2.9.133:59889 ->'), ('sourcedata', '10.2.9.9:53'), ('destinationdata', '1'), ('sourcepackets', '51'), ('source_bytes_flows', '1')])
-                """
+
                 if num > 5:
                     return None  # temporary
                 continue  # temporary to skip any actual processing
@@ -93,6 +162,7 @@ def store_netflows(utils):
                 if netflow_object.bayseflow_key not in utils.genericflows.keys():
                     utils.genericflows[netflow_object.bayseflow_key] = []
                 utils.genericflows[netflow_object.bayseflow_key] += [netflow_object]
+            """
 
 
 def convert_netflow_to_bayseflow(utils):
