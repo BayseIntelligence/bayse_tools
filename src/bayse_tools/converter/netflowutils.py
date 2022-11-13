@@ -7,7 +7,7 @@
 
     For license information, please see the accompanying LICENSE file in the top-level directory of this repository.
 """
-
+import ipaddress
 import json
 import re
 from bayse_tools.common_utilities import iputils
@@ -47,6 +47,7 @@ def store_netflows(utils):
     """
     is_json = True if utils.file_format is not None and "JSON" in utils.file_format else False
     with open(utils.original_filepath) as infile:
+        numfields = -1
         if is_json:
             print(f"{utils.file_format} not currently supported.")
             return None
@@ -90,6 +91,7 @@ def store_netflows(utils):
                         print("Header data (raw):", line)
                         headerinfo = list(filter(None, re.split(",", line.lower().strip())))
                         print(f"Tokenized header data: {headerinfo}")
+                        numfields = len(headerinfo)  # capture number of fields so we can ignore lines of diff length
                         for i, name in enumerate(headerinfo):
                             for key in HEADER_MAPS:
                                 if name.strip() in HEADER_MAPS[key]:
@@ -99,6 +101,9 @@ def store_netflows(utils):
                     continue  # skip other comment/header lines and ignore processing this line for data
                 flowdata = list(filter(None, re.split(",", line.lower().strip())))
                 # an individual line, which actually may not capture all of the data for a 4-tuple.
+                if numfields != -1 and len(flowdata) != numfields:
+                    print(f"Skipping line {flowdata} which seems not to match the file format for flow rows")
+                    continue
                 print(f"Tokenized flow data: {flowdata}")
                 for num, field in enumerate(flowdata):
                     if num in important_fields.values():
@@ -107,8 +112,19 @@ def store_netflows(utils):
                         important_flowdata[field_name] = field
                 print(f"After collecting what matters, here's what we have:", important_flowdata.items())
                 # TODO: Start here, as this is actually a feasible path forward for meeting the upcoming timeline
-                if num > 5:
-                    return None  # temporary
+                netflow_object = netflow.Netflow(important_flowdata)#, is_json)
+                if netflow_object.bayseflow_key is None:
+                    print("Failed to capture key for Netflow object; skipping record. Please see errors before this!")
+                    continue
+                print(f"Is {netflow_object.bayseflow_key} in {utils.genericflows.keys()}?")
+                if netflow_object.bayseflow_key not in utils.genericflows.keys():
+                    print(f"No! Is {netflow_object.reverse_key} ?")
+                    if netflow_object.reverse_key not in utils.genericflows.keys():
+                        utils.genericflows[netflow_object.bayseflow_key] = []
+                    else:
+                        print(f"Yes! So now we've flipped order!")
+                        netflow_object.flip_netflow_order()  # this allows us to simplify code below
+                utils.genericflows[netflow_object.bayseflow_key] += [netflow_object]
             return None  # temporary
         else:
             print("TODO.")
@@ -169,6 +185,13 @@ def convert_netflow_to_bayseflow(utils):
     """This function takes the original Netflow objects (stored as genericflows) and converts them into BayseFlows.
        BayseFlows are made up of one Netflow record...
     """
+    ethernet_header_bytes = 14  # Netflow doesn't ignore header data, so we need to...
+    ipv4_header_bytes = 20  # fixed size
+    ipv6_header_bytes = 40  # fixed size
+    udp_header_bytes = 8  # fixed size
+    tcp_header_bytes = 20  # minimum header size
+    icmpv4_header_bytes = 8  # fixed size
+    icmpv6_header_bytes = 4  # header bytes extend past here, but always has 4 bytes of standard options
 
     for flow_group in utils.genericflows.keys():
         # sort the flows in a flow group by their start timestamp
@@ -208,9 +231,40 @@ def convert_netflow_to_bayseflow(utils):
             else:
                 bayseflow_object.max_ts = max(bayseflow_object.max_ts, netflow.timestamp)
             # if the netflow has a name for the destination, capture it now
-            if netflow.proposed_destname is not None:
-                bayseflow_object.dest_name = netflow.proposed_destname
+            # TODO: Any way for us to capture DNS naming?
+            #if netflow.proposed_destname is not None:
+            #    bayseflow_object.dest_name = netflow.proposed_destname
         if bayseflow_object is not None:
+            # identify layer 3 type to find how many header bytes to ignore
+            header_bytes_to_ignore = 0
+            try:
+                ipaddress.IPv4Address(netflow.source_ip)
+                header_bytes_to_ignore = ipv4_header_bytes
+                if netflow.protocol_information == "ICMP":
+                    header_bytes_to_ignore += icmpv4_header_bytes
+            except:
+                try:
+                    ipaddress.IPv6Address(netflow.source_ip)
+                    header_bytes_to_ignore = ipv6_header_bytes
+                    if netflow.protocol_information == "ICMP":
+                        header_bytes_to_ignore += icmpv6_header_bytes
+                except:
+                    print(f"Error: {netflow.source_ip} is neither an IPv6 nor IPv6 address. Skipping.")
+                    continue
+            if netflow.protocol_information == "TCP":
+                header_bytes_to_ignore += tcp_header_bytes
+            elif netflow.protocol_information == "UDP":
+                header_bytes_to_ignore += udp_header_bytes
+            print(f"BEFORE MODS, Bayseflow object {bayseflow_object.key} has "
+                  f"{bayseflow_object.source_pkts} source packets, {bayseflow_object.source_payload_bytes} source "
+                  f"bytes, {bayseflow_object.dest_pkts} dest packets, {bayseflow_object.dest_payload_bytes} dest bytes"
+                  f" for protocol {bayseflow_object.protocol_information}")
+            bayseflow_object.source_payload_bytes -= (bayseflow_object.source_pkts * header_bytes_to_ignore)
+            bayseflow_object.dest_payload_bytes -= (bayseflow_object.dest_pkts * header_bytes_to_ignore)
+            print(f"AFTER MODS, Bayseflow object {bayseflow_object.key} has "
+                  f"{bayseflow_object.source_pkts} source packets, {bayseflow_object.source_payload_bytes} source "
+                  f"bytes, {bayseflow_object.dest_pkts} dest packets, {bayseflow_object.dest_payload_bytes} dest bytes"
+                  f" for protocol {bayseflow_object.protocol_information}")
             bayseflow_object.set_bayseflow_duration()
 
 
@@ -223,7 +277,7 @@ def netflow_2_bayseflows(utils, dnshelper):
     store_netflows(utils)
 
     # collect DNS records (both local and public lookups)
-    dnshelper.collect_dns_records_from_netflow_sample()
+    #dnshelper.collect_dns_records_from_netflow_sample()  # TODO: Is there anything we can do here?
 
     if len(utils.genericflows) == 0:
         print("No netflows were found in file. No traffic was converted to BayseFlows.")

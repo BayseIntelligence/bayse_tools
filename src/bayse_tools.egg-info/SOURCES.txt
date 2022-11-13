@@ -60,6 +60,10 @@ src/bayse_tools/converter/tests/expectedOutputs/testCase6_icmp_plus_others_filte
 src/bayse_tools/converter/tests/expectedOutputs/testCase7_chromeWin10StartChromeBrowser.conn.bf
 src/bayse_tools/converter/tests/expectedOutputs/testCase8_chromeWin10VisitAmazonScamaDotCom.conn.bf
 src/bayse_tools/converter/tests/expectedOutputs/testCase9_oneLocalFlowIsProcessable.conn.bf
+src/bayse_tools/converter/tests/inputs/astaroth_sample_csv.bf
+src/bayse_tools/converter/tests/inputs/gre_sample_csv.bf
+src/bayse_tools/converter/tests/inputs/ipip_sample_csv.bf
+src/bayse_tools/converter/tests/inputs/ipv6_icmpv6_sample_csv.bf
 src/bayse_tools/converter/tests/inputs/testCase10_oneNonLocalFlowIsProcessable.conn.log
 src/bayse_tools/converter/tests/inputs/testCase11_emptySansHeaders.conn.log
 src/bayse_tools/converter/tests/inputs/testCase12_icmp_plus_others.conn.log

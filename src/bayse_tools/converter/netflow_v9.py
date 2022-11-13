@@ -21,10 +21,52 @@
 """
 
 from bayse_tools.converter import netflowutils
+import copy
+import datetime
 import math
 
 class Netflow():
     def __init__(self, flowdata, is_json=False):
+        try:
+            self.bayseflow_key = f'{flowdata["src"]}:{flowdata["srcport"]}-{flowdata["dst"]}:' \
+                                 f'{flowdata["dstport"]}'
+            self.reverse_key = f'{flowdata["dst"]}:{flowdata["dstport"]}-{flowdata["src"]}:' \
+                                 f'{flowdata["srcport"]}'
+            self.timestamp = datetime.datetime.strptime(flowdata["absolute_start_time"],
+                                                        "%Y-%m-%d %H:%M:%S").timestamp()
+            self.unique_id = f''
+            self.source_ip = f'{flowdata["src"]}'
+            self.source_port = f'{flowdata["srcport"]}'
+            self.dest_ip = f'{flowdata["dst"]}'
+            if self.source_ip == "0.0.0.0" or self.dest_ip == "0.0.0.0":  # TODO: Handle IPv6 too
+                self.bayseflow_key = None
+                return
+            self.dest_port = f'{flowdata["dstport"]}'
+            self.trans_proto = f'{flowdata["protocolInformation"].lower()}' if "protocolInformation" in flowdata \
+                else "-"
+            self.protocol_information = ""
+            if self.trans_proto in ["icmp", "icmp6"]:  # only store ICMP, not differentiation between v4 and v6
+                self.source_port = ""
+                self.dest_port = ""
+                self.protocol_information = "ICMP"
+                self.bayseflow_key = f'{self.source_ip}:{self.protocol_information}-' \
+                                     f'{self.dest_ip}:{self.protocol_information}'
+                self.reverse_key = f'{self.dest_ip}:{self.protocol_information}-' \
+                                   f'{self.source_ip}:{self.protocol_information}'
+            elif self.trans_proto == "udp":
+                self.protocol_information = "UDP"
+            elif self.trans_proto == "tcp":
+                self.protocol_information = "TCP"
+            self.duration = f'{flowdata["duration"]}' if "duration" in flowdata else "-"
+            self.source_bytes = f'{flowdata["srcbytes"]}' if "srcbytes" in flowdata else "-"
+            self.dest_bytes = f'{flowdata["dstbytes"]}' if "dstbytes" in flowdata else "-"
+            self.source_pkts = f'{flowdata["sourcepackets"]}' if "sourcepackets" in flowdata else "0"
+            self.dest_pkts = f'{flowdata["destinationpackets"]}' if "destinationpackets" in flowdata else "0"
+            self.direction = f'{flowdata["direction"]}' if "direction" in flowdata else ""  # 0 = ingress, 1 = egress
+        except Exception as e:
+            print("Something went wrong while trying to parse record for Netflow:\n{}".format(e))
+            self.bayseflow_key = None
+        """
         likely_ms = True  # the time information is likely in milliseconds, so fix up duration and timestamp
         if is_json:
             try:
@@ -48,12 +90,7 @@ class Netflow():
                 total_inpkts_vals = netflowutils.json_extract(flowdata, "inpkts_total")
                 totalpkts_vals = netflowutils.json_extract(flowdata, "totalpackets")
 
-                """
-                print(f"All relevant values found for Interflow {srcip_vals[0]}:{srcport_vals[0]} <-> {dstip_vals[0]}:{dstport_vals[0]}:\n"
-                      f"totalpackets: {totalpkts_vals} total_outpkts: {total_outpkts_vals} total_inpkts: {total_inpkts_vals}"
-                      f"outpkts: {outpkts_vals} inpkts: {inpkts_vals}\n"
-                      f"totalbytes: {totalbytes_vals} outbytes: {outbytes_vals} inbytes: {inbytes_vals}")
-                """
+                
                 if not srcip_vals:
                     missing += ["srcip"]
                 if not srcport_vals:
@@ -197,8 +234,27 @@ class Netflow():
             except Exception as e:
                 print("Something went wrong while trying to parse JSON record for Netflow:\n{}".format(e))
                 self.bayseflow_key = None
-        else:
+        """
+        """else:
             print(f"Netflow data not recognized. We only accept Netflow records in JSON format, with each record "
                   f"in a comma-separated list."
                   )
             self.bayseflow_key = None
+        """
+
+    def flip_netflow_order(self):
+        orig_netflow = copy.deepcopy(self)
+        if self.protocol_information != "ICMP":
+            self.bayseflow_key = f"{orig_netflow.dest_ip}:{orig_netflow.dest_port}-" \
+                                 f"{orig_netflow.source_ip}:{orig_netflow.source_port}"
+        else:
+            self.bayseflow_key = f"{orig_netflow.dest_ip}:{self.protocol_information}-" \
+                                 f"{orig_netflow.source_ip}:{self.protocol_information}"
+        self.source_ip = orig_netflow.dest_ip
+        self.source_port = orig_netflow.dest_port
+        self.dest_ip = orig_netflow.source_ip
+        self.dest_port = orig_netflow.source_port
+        self.source_bytes = orig_netflow.dest_bytes
+        self.dest_bytes = orig_netflow.source_bytes
+        self.source_pkts = orig_netflow.dest_pkts
+        self.dest_pkts = orig_netflow.source_pkts
