@@ -133,7 +133,7 @@ def pcap_to_bayseflow_converter(utils, dnshelper):
     # get all of the TCP records in place
     parse_bayseflows_from_capture_file(utils, "tcp")
 
-    # get all of the ICMP/ICMPv6 records in place
+    # get all of the ICMP/ICMPv6 records in place  This now happens in call below, so not needed explicitly
     #parse_bayseflows_from_capture_file(utils, "icmp or icmp6")
 
     # get all of the IP/IPv6 non-TCP or UDP records (like GRE, IPIP) in place
