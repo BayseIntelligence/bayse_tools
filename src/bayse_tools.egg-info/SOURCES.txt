@@ -53,6 +53,9 @@ src/bayse_tools/converter/tests/expectedOutputs/testCase30_dnsNotButchered_filte
 src/bayse_tools/converter/tests/expectedOutputs/testCase31_dnsNotWronglyAttributed_filtered.bf
 src/bayse_tools/converter/tests/expectedOutputs/testCase32_gre_encapsulation_filtered.bf
 src/bayse_tools/converter/tests/expectedOutputs/testCase33_ipip_encapsulation_filtered.bf
+src/bayse_tools/converter/tests/expectedOutputs/testCase34_ipv6_and_icmpv6_csv.bf
+src/bayse_tools/converter/tests/expectedOutputs/testCase35_gre_encapsulation_csv.bf
+src/bayse_tools/converter/tests/expectedOutputs/testCase36_ipip_encapsulation_csv.bf
 src/bayse_tools/converter/tests/expectedOutputs/testCase3_oneLocalPacketIsProcessable_filtered.bf
 src/bayse_tools/converter/tests/expectedOutputs/testCase4_oneNonLocalPacketIsProcessable_filtered.bf
 src/bayse_tools/converter/tests/expectedOutputs/testCase5_oneFlowPlusLocalDNSIsProcessable_filtered.bf
@@ -60,10 +63,6 @@ src/bayse_tools/converter/tests/expectedOutputs/testCase6_icmp_plus_others_filte
 src/bayse_tools/converter/tests/expectedOutputs/testCase7_chromeWin10StartChromeBrowser.conn.bf
 src/bayse_tools/converter/tests/expectedOutputs/testCase8_chromeWin10VisitAmazonScamaDotCom.conn.bf
 src/bayse_tools/converter/tests/expectedOutputs/testCase9_oneLocalFlowIsProcessable.conn.bf
-src/bayse_tools/converter/tests/inputs/astaroth_sample_csv.bf
-src/bayse_tools/converter/tests/inputs/gre_sample_csv.bf
-src/bayse_tools/converter/tests/inputs/ipip_sample_csv.bf
-src/bayse_tools/converter/tests/inputs/ipv6_icmpv6_sample_csv.bf
 src/bayse_tools/converter/tests/inputs/testCase10_oneNonLocalFlowIsProcessable.conn.log
 src/bayse_tools/converter/tests/inputs/testCase11_emptySansHeaders.conn.log
 src/bayse_tools/converter/tests/inputs/testCase12_icmp_plus_others.conn.log
@@ -97,6 +96,9 @@ src/bayse_tools/converter/tests/inputs/testCase30_dnsNotButchered.pcapng
 src/bayse_tools/converter/tests/inputs/testCase31_dnsNotWronglyAttributed.pcap
 src/bayse_tools/converter/tests/inputs/testCase32_gre_encapsulation.cap
 src/bayse_tools/converter/tests/inputs/testCase33_ipip_encapsulation.cap
+src/bayse_tools/converter/tests/inputs/testCase34_ipv6_and_icmpv6_csv.netflow
+src/bayse_tools/converter/tests/inputs/testCase35_gre_encapsulation_csv.netflow
+src/bayse_tools/converter/tests/inputs/testCase36_ipip_encapsulation_csv.netflow
 src/bayse_tools/converter/tests/inputs/testCase3_oneLocalPacketIsProcessable.pcapng
 src/bayse_tools/converter/tests/inputs/testCase4_oneNonLocalPacketIsProcessable.pcapng
 src/bayse_tools/converter/tests/inputs/testCase5_oneFlowPlusLocalDNSIsProcessable.pcapng

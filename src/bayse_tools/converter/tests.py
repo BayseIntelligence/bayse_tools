@@ -165,6 +165,18 @@ def run_tests():
                     {"inputType": "pcap"
                         , "filename": "testCase33_ipip_encapsulation.cap"
                      }
+                    ,
+                    {"inputType": "netflow"
+                        , "filename": "testCase34_ipv6_and_icmpv6_csv.netflow"
+                     }
+                    ,
+                    {"inputType": "netflow"
+                        , "filename": "testCase35_gre_encapsulation_csv.netflow"
+                     }
+                    ,
+                    {"inputType": "netflow"
+                        , "filename": "testCase36_ipip_encapsulation_csv.netflow"
+                     }
                 ]
     test_dir = None
     with importlib.resources.files(__package__).joinpath("tests") as p:
@@ -197,6 +209,11 @@ def run_tests():
                 convert.convert_interflow(f"{inputs_location}/{test['filename']}",
                                           output_dir=outputs_location
                                           )
+            elif test["inputType"] == "netflow":
+                print(f"Converting {test['filename']} from {test['inputType'].upper()} to {bayse_format}.")
+                convert.convert_netflow(f"{inputs_location}/{test['filename']}",
+                                        output_dir=outputs_location
+                                        )
             else:
                 print(f"Unrecognized input type {test['inputType']}...skipping!")
                 continue
@@ -211,7 +228,7 @@ def run_tests():
     for tc in test_cases:
         name = tc["filename"]
         p = pathlib.Path(name)
-        if p.suffix in [".log", ".if"]:
+        if p.suffix in [".log", ".if", ".netflow"]:
             updated_name = str(p.with_suffix(".bf"))
         else:
             updated_name = p.stem + "_filtered.bf"
@@ -225,8 +242,9 @@ def run_tests():
                 expected_data = json.load(expected)
             with open(output_loc, "rb") as output:
                 output_data = json.load(output)
-        except:
-            print("Something went wrong while trying to load files. Skipping test. Review above logs for details.")
+        except Exception as e:
+            print(f"Something went wrong while trying to load files: {e}\n Skipping test. Review above logs for "
+                  "details.")
             continue
         if expected_data is None or output_data is None:
             print("Something went wrong while trying to load files. Skipping test. Review above logs for details.")

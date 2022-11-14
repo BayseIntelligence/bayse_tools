@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: bayse-tools
-Version: 1.1.0
+Version: 1.0.3
 Summary: A collection of tools useful across the Bayse ecosystem.
 Home-page: https://github.com/BayseIntelligence/bayse_tools
 Author: Bayse, Inc.
@@ -56,11 +56,12 @@ To import this module into your project, type the following:
 #### Supported File Formats
 Bayse currently supports conversion into BayseFlow format from the following formats:
 
-| Format | Specific File Types                                |
-|--------|----------------------------------------------------|
+| Format         | Specific File Types                                |
+|----------------|----------------------------------------------------|
  | Packet Capture | `CAP`, `PCAP`, and `PCAPNG`                        |
- | Zeek  | `conn.log` and `dns.log` in `TSV` or `JSON` format |
- | Interflow | comma-separated list of `JSON` records             |
+ | Zeek           | `conn.log` and `dns.log` in `TSV` or `JSON` format |
+ | Interflow      | comma-separated list of `JSON` records             |
+| Netflow        | CSV of unidirectional Netflow v9 records           |
 
 `?` If you have a format that you'd like us to support, please contact support at bayse [.] io.
 
@@ -87,6 +88,12 @@ convert to BayseFlow. The log file is expected to contain a comma-separated list
 For non-DNS records, below is an example Interflow record that includes only the fields we need:
 
     [{"timestamp": 1656517273641, "duration": 401, "_id": "6c0liABC8qtQm3loQr7H", "msg_class": "interflow_traffic", "srcip": "172.18.40.120", "srcport": 55503,"dstip": "142.251.40.65", "dstip_host": "ci3.googleusercontent.com", "dstport": 80, "proto_name": "tcp", "outbytes_total": 0, "inpkts_delta": 5, "outpkts_delta": 0, "inbytes_total": 17765}]
+
+To convert a Netflow CSV into an unlabeled BayseFlow file, simply enter the following:
+
+`convert.convert_netflow(<path_to_Netflow_csv>)`
+
+Similar to Interflow, there are MANY fields in Netflow v9 that are not used.
 
 
 #### Plaintext Formats
@@ -177,36 +184,37 @@ The BayseFlow format is saved as a `.bf` file and is comprised of records contai
 
 ```
 {
-  "hash": "7e156c19e5cb412590f2a3d4400fb7f6",
-  "trafficDate": "1617652286.24605",
-  "fileName": "testCase5_oneFlowPlusLocalDNSIsProcessable_filtered.bf",
+  "hash": "6d8091a34ae3427bbffa5c19e5d3391c",
+  "trafficDate": "1654204899.899094",
+  "fileName": "testCase24_ipv6_withDNS_and_icmpv6.conn.bf",
   "BayseFlows": [
     {
-      "src": "192.168.86.245:22256",
-      "dst": "192.168.86.1:53",
+      "src": "192.168.12.164:62239",
+      "dst": "9.9.9.9:53",
       "destinationNameSource": "original",
       "srcPkts": 1,
-      "srcBytes": 44,
+      "srcBytes": 32,
       "dstPkts": 1,
-      "dstBytes": 76,
-      "relativeStart": 0,
+      "dstBytes": 155,
+      "relativeStart": 0.0,
       "protocolInformation": "UDP",
-      "identifier": "0",
-      "duration": 0.074424
+      "identifier": "CvJxCegvPKSYQpTeh",
+      "duration": 0.055491
     },
     {
-      "src": "192.168.86.245:63694",
-      "dst": "contextualizedsecurity.com:443",
+      "src": "2607:fb90:d726:7b19:5cc5:a122:d8ae:24e6:58740",
+      "dst": "r3.o.lencr.org:80",
       "destinationNameSource": "passive",
-      "srcPkts": 19,
-      "srcBytes": 7552,
-      "dstPkts": 24,
-      "dstBytes": 11520,
-      "relativeStart": 0.169868,
+      "srcPkts": 84,
+      "srcBytes": 14526,
+      "dstPkts": 47,
+      "dstBytes": 35524,
+      "relativeStart": 0.112856,
       "protocolInformation": "TCP",
-      "identifier": "0",
-      "duration": 7.556651
-    }
+      "identifier": "COVJH14OZAUWEf1Vd",
+      "duration": 48.68848
+    },
+    ...
   ]
 }
 ```
@@ -231,6 +239,35 @@ Details about each field are as follows:
 | --> identifier            | a way to tie the BayseFlow back to a flow in the original input format                       | unique_id for Zeek, TCP/UDP stream for Packet Captures                                                                                                                                                                               |
 | --> duration              | identify how long (seconds.ms) a flow lasted                                                 | start of first packet to end of last packet in flow                                                                                                                                                                                  |
 
+
+## Labeling
+BayseFlows can also be labeled with information about characteristics of the flow that are interesting. These labels 
+are useful for identifying activity that is (ab)normal, understanding how data is flowing locally or to/from the 
+Internet, and so on. Doing so adds the `label` field to the `.bf` file. Take the following flow for example:
+
+```
+    {
+      "src": "192.168.1.133:59893",
+      "dst": "54.37.70.105:8080",
+      "destinationNameSource": "original",
+      "srcPkts": 218,
+      "srcBytes": 1540,
+      "dstPkts": 1801,
+      "dstBytes": 2497139,
+      "relativeStart": 17.916785,
+      "protocolInformation": "TCP",
+      "identifier": "115",
+      "duration": 5.62408,
+      "label": "floodOfXLFilelikeDownloaded"
+    }
+```
+
+The `floodOfXLFilelikeDownloaded` shows us that something that looks like a large file was downloaded in just 
+seconds. Depending on whether or not that activity is expected from that destination can help you to determine if 
+you should care.
+
+To label your data, you'll first need to register for an account on [Bayse](https://www.bayse.io/register), request 
+a free API key, and reach out to hello at bayse [.] io. We'd love to help you get started!
 
 ## Troubleshooting
 

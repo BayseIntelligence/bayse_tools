@@ -1,0 +1,1 @@
+{"hash": "20a8834bf81f43bca7fa7c07ebb73a46", "trafficDate": "1214049966.0", "fileName": "testCase35_gre_encapsulation_csv.bf", "BayseFlows": [{"src": "1.1.1.1", "dst": "2.2.2.2", "destinationNameSource": "original", "srcPkts": 5, "srcBytes": 480, "dstPkts": 5, "dstBytes": 480, "relativeStart": 0.0, "protocolInformation": "ICMP", "identifier": "", "duration": 0.0}]}

@@ -1,0 +1,1 @@
+{"hash": "cb63b24dae824cafb3571e0560c8eeae", "trafficDate": "1214050326.0", "fileName": "testCase36_ipip_encapsulation_csv.bf", "BayseFlows": [{"src": "1.1.1.1", "dst": "2.2.2.2", "destinationNameSource": "original", "srcPkts": 5, "srcBytes": 460, "dstPkts": 5, "dstBytes": 460, "relativeStart": 0.0, "protocolInformation": "ICMP", "identifier": "", "duration": 0.0}]}
