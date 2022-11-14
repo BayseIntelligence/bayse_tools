@@ -32,11 +32,12 @@ SUPPORTED_FORMATS = ["Zeek", "PCAP", "Interflow", "Netflow v9"]
 
 
 def finish_conversion(dnshelper, utils, should_label=False, api_key=None, env_var=None, labeling_path=None,
-                      converter_start=None):
+                      converter_start=None, share_stats=True):
     """Handle final conversion of inputs that don't depend on input-specific information. Default to believing that the
        initial pieces of the pipeline were successful unless we are told otherwise by incoming knowledge. Doing so
        allows us to create a valid file with no data when there are either no flows or something has failed. If the
-       caller requests to label the BayseFlow file, we attempt to do so.
+       caller requests to label the BayseFlow file, we attempt to do so. If the caller requests that we not share the
+       statistics associated with labeling, we will honor that request.
     """
     if len(utils.bayseflows) > 0:
         # get passive DNS
@@ -87,8 +88,12 @@ def finish_conversion(dnshelper, utils, should_label=False, api_key=None, env_va
         # construct the path to the labeling executable
         labeling_binary = f"{labeling_path}/" \
                           f"{utils.labeling_binary_name}" if labeling_path else utils.labeling_binary_name
-        result = subprocess.run([labeling_binary, "-k", api_key, "--files", utils.bayseflow_output_filepath],
-                                capture_output=True, text=True)
+        if share_stats:
+            result = subprocess.run([labeling_binary, "-k", api_key, "--files", utils.bayseflow_output_filepath],
+                                    capture_output=True, text=True)
+        else:
+            result = subprocess.run([labeling_binary, "-k", api_key, "--noupload", "--files",
+                                     utils.bayseflow_output_filepath], capture_output=True, text=True)
         if result.stdout:
             print(f"Details: {result.stdout}")
         if result.stderr:
@@ -103,7 +108,7 @@ def finish_conversion(dnshelper, utils, should_label=False, api_key=None, env_va
 
 
 def convert_zeek(zeekfile_location, zeek_dnsfile_location=None, output_dir=None, should_label=False, api_key=None,
-                 env_var=None, labeling_path=None, converter_start=None):
+                 env_var=None, labeling_path=None, converter_start=None, share_stats=True):
     """Handles all of the Zeek-specific conversion needs. Takes an optional DNS log.
     """
     my_platform = platform.system().lower()
@@ -122,11 +127,11 @@ def convert_zeek(zeekfile_location, zeek_dnsfile_location=None, output_dir=None,
 
     # most of the heavy lifting happens here
     zeekutils.zeek_2_bayseflows(utils)
-    finish_conversion(dnshelper, utils, should_label, api_key, env_var, labeling_path, converter_start)
+    finish_conversion(dnshelper, utils, should_label, api_key, env_var, labeling_path, converter_start, share_stats)
 
 
 def convert_interflow(interflow_location, output_dir=None, should_label=False, api_key=None, env_var=None,
-                      labeling_path=None, converter_start=None):
+                      labeling_path=None, converter_start=None, share_stats=True):
     """Handles all of the Interflow-specific conversion needs.
     """
     my_platform = platform.system().lower()
@@ -141,11 +146,11 @@ def convert_interflow(interflow_location, output_dir=None, should_label=False, a
 
     # most of the heavy lifting happens here
     interflowutils.interflow_2_bayseflows(utils, dnshelper)
-    finish_conversion(dnshelper, utils, should_label, api_key, env_var, labeling_path, converter_start)
+    finish_conversion(dnshelper, utils, should_label, api_key, env_var, labeling_path, converter_start, share_stats)
 
 
 def convert_netflow(interflow_location, output_dir=None, should_label=False, api_key=None, env_var=None,
-                      labeling_path=None, converter_start=None):
+                      labeling_path=None, converter_start=None, share_stats=True):
     """Handles all of the Netflow-specific conversion needs.
     """
     my_platform = platform.system().lower()
@@ -160,11 +165,11 @@ def convert_netflow(interflow_location, output_dir=None, should_label=False, api
 
     # most of the heavy lifting happens here
     netflowutils.netflow_2_bayseflows(utils, dnshelper)
-    finish_conversion(dnshelper, utils, should_label, api_key, env_var, labeling_path, converter_start)
+    finish_conversion(dnshelper, utils, should_label, api_key, env_var, labeling_path, converter_start, share_stats)
 
 
 def convert_pcap(pcapfile_location, output_dir=None, should_label=False, api_key=None, env_var=None,
-                 labeling_path=None, converter_start=None):
+                 labeling_path=None, converter_start=None, share_stats=True):
     """Handles all of the PCAP-specific conversion needs. Supports PCAPNG as well.
     """
     my_platform = platform.system().lower()
@@ -182,7 +187,7 @@ def convert_pcap(pcapfile_location, output_dir=None, should_label=False, api_key
     """
     utils.set_bayseflow_durations()
     utils.set_stream_ids_for_pcap()
-    finish_conversion(dnshelper, utils, should_label, api_key, env_var, labeling_path, converter_start)
+    finish_conversion(dnshelper, utils, should_label, api_key, env_var, labeling_path, converter_start, share_stats)
 
 
 if __name__ == "__main__":
@@ -213,6 +218,8 @@ if __name__ == "__main__":
     labeling_group.add_argument("-e", "--environmentVariable",
                               help="name of the environment variable where your API key is stored",
                               type=str)
+    labeling_group.add_argument("--noupload", help=f"Set this if you cannot share your statistics with the rest of "
+                                                   f"the Bayse community", action="store_true")
     stats_group = parser.add_argument_group("stats", "arguments to use for collecting statistics about the conversion.")
     stats_group.add_argument("-t", "--timing", help="capture diagnostics about timing of each step",
                              action="store_true")
@@ -260,6 +267,7 @@ if __name__ == "__main__":
     environment_variable = None
     label = False
     labeling_binary_path = None
+    share_stats = False if args.noupload else True  # we always default to sharing unless the user requests otherwise
     if args.label:
         label = True
         if not args.apiKey and not args.environmentVariable:
@@ -286,14 +294,15 @@ if __name__ == "__main__":
                      api_key=api_key,
                      env_var=environment_variable,
                      labeling_path=labeling_binary_path,
-                     converter_start=converter_start
+                     converter_start=converter_start,
+                     share_stats=share_stats
                      )
     elif args.pcap:
         convert_pcap(pcapfile_location, should_label=label, api_key=api_key, env_var=environment_variable,
-                     labeling_path=labeling_binary_path, converter_start=converter_start)
+                     labeling_path=labeling_binary_path, converter_start=converter_start, share_stats=share_stats)
     elif args.interflowLog:
         convert_interflow(interflow_location, should_label=label, api_key=api_key, env_var=environment_variable,
-                          labeling_path=labeling_binary_path, converter_start=converter_start)
+                          labeling_path=labeling_binary_path, converter_start=converter_start, share_stats=share_stats)
     elif args.netflowLog:
         convert_netflow(netflow_location, should_label=label, api_key=api_key, env_var=environment_variable,
-                          labeling_path=labeling_binary_path, converter_start=converter_start)
+                          labeling_path=labeling_binary_path, converter_start=converter_start, share_stats=share_stats)

@@ -202,6 +202,7 @@ def save_bayseflows(**kwargs):
     env_var = kwargs["environment_variable"]
     should_label = kwargs["should_label"]
     labeling_path = kwargs["labeling_path"]
+    share_stats = kwargs["share_stats"] if "share_stats" in kwargs else True
 
     # stop active threads
     utils.stop_thread = True
@@ -222,8 +223,12 @@ def save_bayseflows(**kwargs):
         # construct the path to the labeling executable
         labeling_binary = f"{labeling_path}/" \
                           f"{utils.labeling_binary_name}" if labeling_path else utils.labeling_binary_name
-        result = subprocess.run([labeling_binary, "-k", api_key, "--files", utils.bayseflow_output_filepath],
-                                capture_output=True, text=True)
+        if share_stats:
+            result = subprocess.run([labeling_binary, "-k", api_key, "--files", utils.bayseflow_output_filepath],
+                                    capture_output=True, text=True)
+        else:
+            result = subprocess.run([labeling_binary, "-k", api_key, "--noupload", "--files",
+                                     utils.bayseflow_output_filepath], capture_output=True, text=True)
         if result.stdout:
             print(f"Details: {result.stdout}")
         if result.stderr:

@@ -65,7 +65,8 @@ def schedule_cleanup(**kwargs):
     s.run()
 
 
-def start(interface, duration=60, is_verbose=False, should_label=False, api_key=None, env_var=None, labeling_path=None):
+def start(interface, duration=60, is_verbose=False, should_label=False, api_key=None, env_var=None,
+          labeling_path=None, share_stats=True):
     """Start the streaming functionality. Expects the name of the interface to capture network data from, and a duration
         (in seconds) to capture before creating a BayseFlow file. This function will run until killed, continually
         generating BayseFlow files. If no API key is available and labeling is requested, no BayseFlows will be
@@ -104,6 +105,7 @@ def start(interface, duration=60, is_verbose=False, should_label=False, api_key=
                                                 "environment_variable": env_var,
                                                 "should_label": should_label,
                                                 "labeling_path": labeling_path,
+                                                "share_stats": share_stats,
                                                 "is_verbose": is_verbose
                                                 }
                                         )
