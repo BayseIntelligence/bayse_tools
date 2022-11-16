@@ -166,7 +166,7 @@ class Utilities:
         """Captures BayseFlows and other important metadata in JSON format for final transmission back to the caller
             (usually an API).
         """
-        if self.is_streaming: # this is streaming mode
+        if self.is_streaming:  # this is streaming mode
             time_str = str(self.file_start_time)
             start_time_str = str(time_str[:time_str.find(".")])
             self.bayseflow_output_filepath = f"{self.system_type}_{start_time_str}.bf"
@@ -191,6 +191,14 @@ class Utilities:
             self.sample_name = os.path.basename(self.bayseflow_output_filepath)
             rows = []
             for flow in self.bayseflows.keys():
+                # make sure that any time we have source bytes, we also have at least one source packet
+                if self.bayseflows[flow].source_payload_bytes > 0 and self.bayseflows[flow].source_pkts == 0:
+                    #print(f"Flow {flow} has no source packets despite having source bytes, so defaulting to 1")
+                    self.bayseflows[flow].source_pkts += 1
+                # make sure that any time we have destination bytes, we also have at least one destination packet
+                if self.bayseflows[flow].dest_payload_bytes > 0 and self.bayseflows[flow].dest_pkts == 0:
+                    #print(f"Flow {flow} has no dest packets despite having dest bytes, so defaulting to 1")
+                    self.bayseflows[flow].dest_pkts += 1
                 if self.bayseflows[flow].protocol_information in ["ICMP"]:
                     #first_delimiter = self.bayseflows[flow].key.find(":")
                     rows += [

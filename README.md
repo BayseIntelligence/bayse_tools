@@ -45,7 +45,7 @@ Bayse currently supports conversion into BayseFlow format from the following for
  | Packet Capture | `CAP`, `PCAP`, and `PCAPNG`                        |
  | Zeek           | `conn.log` and `dns.log` in `TSV` or `JSON` format |
  | Interflow      | comma-separated list of `JSON` records             |
-| Netflow        | CSV of unidirectional Netflow v9 records           |
+| Netflow        | `CSV` of unidirectional Netflow v9 records           |
 
 `?` If you have a format that you'd like us to support, please contact support at bayse [.] io.
 

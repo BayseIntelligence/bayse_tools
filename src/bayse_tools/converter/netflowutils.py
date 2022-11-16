@@ -50,6 +50,7 @@ def store_netflows(utils):
        formats is stubbed out. To request support for additional formats, please get in touch with the maintainer
        mentioned in this file's header.
     """
+    headerinfo = None
     is_json = True if utils.file_format is not None and "JSON" in utils.file_format else False
     with open(utils.original_filepath) as infile:
         numfields = -1
@@ -70,7 +71,6 @@ def store_netflows(utils):
                     print(f"Unrecognized JSON data {type(data)}")
                     return None
             for flowdata in flows:
-                important_fields = dict()
                 # an individual line, which actually doesn't generally capture all of the data for a 4-tuple.
                 for field in flowdata:
                     for key in HEADER_MAPS:
@@ -97,14 +97,12 @@ def store_netflows(utils):
                         headerinfo = list(filter(None, re.split(",", line.lower().strip())))
                         #print(f"Tokenized header data: {headerinfo}")
                         numfields = len(headerinfo)  # capture number of fields so we can ignore lines of diff length
-                        for i, name in enumerate(headerinfo):
-                            for key in HEADER_MAPS:
-                                if name.strip() in HEADER_MAPS[key]:
-                                    important_fields[key] = i
-                        # TODO! Make the field collection function (so we can handle varied formats) separate!
-                        #print("After analyzing header, we have the following important fields in these positions:",
-                        # important_fields)
+                        important_fields = map_header_to_fields(headerinfo)
                     continue  # skip other comment/header lines and ignore processing this line for data
+                if num == 0 and not headerinfo:  # We didn't have a header line, so we will try to use a default header
+                    headerinfo = ["ts","td","sa","da","sp","dp","pr","flg","ipkt","ibyt","opkt","obyt","label"]
+                    numfields = len(headerinfo)
+                    important_fields = map_header_to_fields(headerinfo)
                 flowdata = list(filter(None, re.split(",", line.lower().strip())))
                 # an individual line, which actually may not capture all of the data for a 4-tuple.
                 if numfields != -1 and len(flowdata) != numfields:
@@ -175,6 +173,19 @@ def store_netflows(utils):
                     utils.genericflows[netflow_object.bayseflow_key] = []
                 utils.genericflows[netflow_object.bayseflow_key] += [netflow_object]
             """
+
+
+def map_header_to_fields(headerinfo):
+    """Takes the header info that we either got from the file or grabbed from our default header format, then parses
+       it to find only the fields that we actually care about.
+    """
+    important_fields = dict()
+    for i, name in enumerate(headerinfo):
+        for key in HEADER_MAPS:
+            if name.strip() in HEADER_MAPS[key]:
+                important_fields[key] = i
+    #print("After analyzing header, we have the following important fields in these positions:", important_fields)
+    return important_fields
 
 
 def convert_netflow_to_bayseflow(utils):
@@ -262,6 +273,10 @@ def convert_netflow_to_bayseflow(utils):
             bayseflow_object.source_payload_bytes -= (bayseflow_object.source_pkts * header_bytes_to_ignore)
             bayseflow_object.dest_payload_bytes -= (bayseflow_object.dest_pkts * header_bytes_to_ignore)
             bayseflow_object.set_bayseflow_duration()
+            if not bayseflow_object.is_correct_direction():
+                bayseflow_object.flip_bayseflow_order()
+                del utils.bayseflows[netflow.bayseflow_key]  # remove the old one
+                utils.bayseflows[netflow.reverse_key] = bayseflow_object
 
 
 def netflow_2_bayseflows(utils, dnshelper):
