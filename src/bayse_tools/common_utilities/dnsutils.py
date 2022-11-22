@@ -391,12 +391,15 @@ class DNS:
             elif q_type == PTR_RECORD_TYPE:
                 has_ptr_record = True
             if cnt == 0:
-                # handle wonky characters in place of an expected "."
-                name_data_raw = pkt[qs_section_start:qs_section_start+null_position].decode("ascii")
-                q_name = self.get_clean_dns_names(name_data_raw) + "."
-                if q_name not in self.questions.keys():
-                    self.questions[q_name] = set()  # we don't yet have the answer
-            else:
+                try:
+                    # handle wonky characters in place of an expected "."
+                    name_data_raw = pkt[qs_section_start:qs_section_start+null_position].decode("ascii")
+                    q_name = self.get_clean_dns_names(name_data_raw) + "."
+                    if q_name not in self.questions.keys():
+                        self.questions[q_name] = set()  # we don't yet have the answer
+                except Exception as e:
+                    print(f"Error handling first DNS question: {e}")
+            elif cnt == 1:  # only print once per packet
                 print("Multi-question DNS responses not currently implemented. Only parsed first Q.")
                 ###TODO. May not be terribly important in common usage, but should be handled at some point.
             cnt += 1
